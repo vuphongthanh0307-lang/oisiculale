@@ -412,8 +412,12 @@ async function startFishingProcess(bot) {
                     console.log('[Câu Cá] Thu cần xong. Chuẩn bị quăng lại ngay lập tức...');
                     await sleep(500); 
                 } else {
-                    console.log('[Câu Cá] Rớt mồi hoặc đứt dây. Nghỉ ngơi tí rồi quăng lại...', err.message);
-                    await randomSleep(1500, 2500);
+                    // =========================================================
+                    // [TÍNH NĂNG MỚI] DỖI SERVER: HỤT 1 PHÁT LÀ RÚT DÂY MẠNG LIỀN
+                    // =========================================================
+                    console.log('>>> [CẢNH BÁO] ❌ Hụt cá rồi! Sủi ngay để reset nhân phẩm...');
+                    bot.quit('Missed Fish'); // Lệnh này đá văng bot khỏi server ngay lập tức
+                    break; // Phá vỡ vòng lặp câu cá hiện tại
                 }
             }
         }
