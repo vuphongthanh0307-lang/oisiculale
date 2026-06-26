@@ -43,7 +43,6 @@ let failCount = 0;
 let isSonarKick = false; 
 let sonarInterval = null; 
 let rotateInterval = null; 
-let isKilledByAdmin = false; // Cờ đóng băng tránh Staff
 
 function createBot() {
     const bot = mineflayer.createBot({
@@ -172,19 +171,6 @@ function createBot() {
 
     bot.on('messagestr', (message) => {
         const lowerMsg = message.toLowerCase();
-
-        // ==========================================
-        // [NÂNG CẤP VIP] BÁO ĐỘNG ĐỎ KHI CÓ STAFF
-        // ==========================================
-        if (lowerMsg.includes('losts vừa tham gia') || lowerMsg.includes('nugget_champion vừa tham gia')) {
-            console.log('\n================================================================');
-            console.log('🚨 [BÁO ĐỘNG ĐỎ] CHẠY NGAY ĐI! ADMIN/STAFF VỪA VÀO SERVER! 🚨');
-            console.log('🚨 ĐÓNG BĂNG HỆ THỐNG VĨNH VIỄN ĐỂ BẢO TOÀN ACC! 🚨');
-            console.log('================================================================\n');
-            isKilledByAdmin = true; 
-            bot.quit(); 
-            return;
-        }
 
         if (lowerMsg.includes('/captcha')) {
             const match = message.match(/\/captcha\s+([a-zA-Z0-9]+)/i);
@@ -338,12 +324,6 @@ function createBot() {
         if (sonarInterval) { clearInterval(sonarInterval); sonarInterval = null; }
         if (rotateInterval) { clearInterval(rotateInterval); rotateInterval = null; }
 
-        // [!] CHẶN VÀO LẠI NẾU BỊ ADMIN RƯỢT
-        if (isKilledByAdmin) {
-            console.log('🛑 🛑 🛑 HỆ THỐNG ĐÃ KHÓA! BOT SẼ KHÔNG TỰ ĐỘNG VÀO LẠI ĐỂ TRÁNH ADMIN. MUỐN CHẠY TIẾP HÃY RESTART LẠI CODE! 🛑 🛑 🛑');
-            return;
-        }
-
         if (isSonarKick) {
             isSonarKick = false; 
             failCount = 0; 
@@ -380,14 +360,11 @@ function createBot() {
     });
 }
 
-// ======================================================================
-// LÕI CÂU CÁ (UPDATE: HỤT 3 LẦN MỚI OUT ĐỂ TRÁNH ANTI-CHEAT)
-// ======================================================================
 async function startFishingProcess(bot) {
     if (bot.isFishingActive) return; 
     bot.isFishingActive = true;
     
-    let missCount = 0; // Bộ đếm nhân phẩm hụt cá
+    let missCount = 0; 
 
     try {
         bot.setQuickBarSlot(0); 
@@ -427,7 +404,7 @@ async function startFishingProcess(bot) {
                 
                 console.log('[Câu Cá] 🐟 LỤM CÁ! Dính rồi! Đang gỡ cá...');
                 failCount = 0; 
-                missCount = 0; // Reset bộ đếm về 0 vì đã câu trúng
+                missCount = 0; 
                 
                 await randomSleep(800, 1800); 
 
@@ -437,16 +414,16 @@ async function startFishingProcess(bot) {
                     console.log('[Câu Cá] Thu cần xong. Chuẩn bị quăng lại ngay lập tức...');
                     await sleep(500); 
                 } else {
-                    missCount++; // Cộng dồn số lần hụt
+                    missCount++; 
                     
                     if (missCount >= 3) {
-                        console.log('>>> [CẢNH BÁO] ❌ Hụt cá 3 lần liên tiếp! Dấu hiệu bị soi/lag, sủi ngay để reset...');
-                        bot.isDoiServer = true; // Cắm cờ "Dỗi" lên
-                        bot.quit('Missed Fish 3 times'); // Đá văng bot khỏi server
+                        console.log('>>> [CẢNH BÁO] ❌ Hụt cá 3 lần liên tiếp! Reset nhân phẩm...');
+                        bot.isDoiServer = true; 
+                        bot.quit(); 
                         break; 
                     } else {
-                        console.log(`[Câu Cá] ⚠️ Hụt cá lần ${missCount}! Chờ xíu rồi quăng lại cho giống người thật...`);
-                        await randomSleep(1500, 2500); // Đứng im 1-2s giải nai rồi câu tiếp
+                        console.log(`[Câu Cá] ⚠️ Hụt cá lần ${missCount}! Chờ xíu rồi quăng lại...`);
+                        await randomSleep(1500, 2500); 
                     }
                 }
             }
