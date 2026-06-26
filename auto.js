@@ -21,7 +21,7 @@ console.error = function(...args) {
     originalError.apply(console, args);
 };
 
-const RECONNECT_DELAY = 20000; 
+const RECONNECT_DELAY = 40000; 
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -349,6 +349,15 @@ function createBot() {
             return; 
         }
 
+        // =========================================================
+        // [ĐẶC QUYỀN]: THẤY CỜ "DỖI SERVER" LÀ VÔ LẠI NGAY LẬP TỨC
+        // =========================================================
+        if (bot.isDoiServer) {
+            console.log('[Dỗi Server] Nghỉ chơi 3 giây rồi log vô lại liền!');
+            setTimeout(createBot, 3000); // 3 giây bay vô liền, không bị tính failCount
+            return;
+        }
+
         failCount++;
         if (failCount >= 5) {
             console.log(`[BÁO ĐỘNG] Rớt mạng ${failCount} lần! Ngủ đông 1 tiếng...`);
@@ -416,6 +425,7 @@ async function startFishingProcess(bot) {
                     // [TÍNH NĂNG MỚI] DỖI SERVER: HỤT 1 PHÁT LÀ RÚT DÂY MẠNG LIỀN
                     // =========================================================
                     console.log('>>> [CẢNH BÁO] ❌ Hụt cá rồi! Sủi ngay để reset nhân phẩm...');
+                    bot.isDoiServer = true; // Cắm cờ "Dỗi" lên
                     bot.quit('Missed Fish'); // Lệnh này đá văng bot khỏi server ngay lập tức
                     break; // Phá vỡ vòng lặp câu cá hiện tại
                 }
