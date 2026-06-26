@@ -416,8 +416,8 @@ async function startFishingProcess(bot) {
                 } else {
                     missCount++; 
                     
-                    if (missCount >= 3) {
-                        console.log('>>> [CẢNH BÁO] ❌ Hụt cá 3 lần liên tiếp! Reset nhân phẩm...');
+                    if (missCount >= 10) {
+                        console.log('>>> [CẢNH BÁO] ❌ Hụt cá 10 lần liên tiếp! Reset nhân phẩm...');
                         bot.isDoiServer = true; 
                         bot.quit(); 
                         break; 
