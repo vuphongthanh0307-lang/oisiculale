@@ -360,63 +360,6 @@ function createBot() {
     });
 }
 
-// =========================================================================
-// MÁY QUÉT RÁC: Mở GUI /trash và quăng những vật phẩm rác vào đó
-// =========================================================================
-async function autoTossTrash(bot) {
-    if (!bot.inventory) return;
-
-    // Bộ lọc thông minh: Lấy ra những món rác cần phi tang
-    const junk = bot.inventory.items().filter(item => {
-        // Cấm đụng vào Cần Câu và La Bàn
-        if (item.name === 'fishing_rod' || item.name === 'compass') return false;
-        
-        // Trong 1.12.2: Cá Hề (Metadata 2), Cá Nóc (Metadata 3) -> Giữ lại
-        if (item.name === 'fish' && (item.metadata === 2 || item.metadata === 3)) return false;
-
-        // Những thứ còn lại (Da, Cung, Sách vỡ, Cá sống...) -> Đem vứt
-        return true;
-    });
-    
-    if (junk.length === 0) return; // Nếu balo sạch sẽ thì không cần làm gì thêm
-
-    console.log(`[Lọc Rác] Balo có dính ${junk.length} món cặn bã. Đang gõ /trash để dọn dẹp...`);
-
-    try {
-        bot.chat('/trash');
-        
-        // Chờ bảng GUI của Thùng rác mở ra
-        const trashWindow = await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Mở thùng rác thất bại (Server lag)')), 3000);
-            bot.once('windowOpen', (win) => {
-                clearTimeout(timeout);
-                resolve(win);
-            });
-        });
-        await sleep(1000); // Chờ GUI load ổn định
-
-        // Dùng vòng lặp nhét từng món rác vào GUI thùng rác
-        for (const item of junk) {
-            // Cập nhật lại vị trí của item trong bảng kho đồ đang mở
-            const itemInWindow = trashWindow.items().find(i => i.type === item.type && i.metadata === item.metadata && i.slot >= trashWindow.inventoryStart);
-            if (itemInWindow) {
-                // Nhấn Shift-Click để bay thẳng vào rương
-                await bot.clickWindow(itemInWindow.slot, 0, 1); 
-                await sleep(300); // Delay nhẹ giữa mỗi cú ném tránh lag
-            }
-        }
-        
-        // Đóng nắp thùng rác lại
-        if (bot.currentWindow) bot.closeWindow(bot.currentWindow);
-        console.log('[Lọc Rác] Phi tang thành công! Về câu tiếp thôi...');
-        await sleep(500);
-
-    } catch (e) {
-        console.log('[-] Lỗi trong lúc vứt rác:', e.message);
-        if (bot.currentWindow) bot.closeWindow(bot.currentWindow);
-    }
-}
-
 async function startFishingProcess(bot) {
     if (bot.isFishingActive) return; 
     bot.isFishingActive = true;
@@ -451,7 +394,10 @@ async function startFishingProcess(bot) {
                 continue; 
             }
 
-            await bot.equip(fishingRod, 'hand');
+            // [TỐI ƯU]: Chỉ lấy cần câu ra nếu trên tay chưa cầm, tránh việc Mineflayer tự ý đổi slot kho đồ liên tục
+            if (!bot.heldItem || bot.heldItem.name !== 'fishing_rod') {
+                await bot.equip(fishingRod, 'hand');
+            }
 
             try {
                 await randomSleep(300, 800); 
@@ -464,9 +410,6 @@ async function startFishingProcess(bot) {
                 missCount = 0; 
                 
                 await randomSleep(800, 1800); 
-
-                // Tự động quét và mở thùng rác nếu nhặt trúng hàng lỗi
-                await autoTossTrash(bot);
 
             } catch (err) {
                 if (bot.isRecasting) {
