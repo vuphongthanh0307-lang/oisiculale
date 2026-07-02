@@ -367,6 +367,7 @@ async function startFishingProcess(bot) {
     let missCount = 0; 
 
     try {
+        // [CẢI TIẾN LÕI] Cuộn chuột về ô số 1 một lần duy nhất lúc mới vào game
         bot.setQuickBarSlot(0); 
         await sleep(2000);
         
@@ -387,16 +388,14 @@ async function startFishingProcess(bot) {
         }, 50); 
 
         while (botState === 'FARMING' && bot.isFishingActive && bot._client) {
-            const fishingRod = bot.inventory.items().find(item => item.name === 'fishing_rod');
-            if (!fishingRod) {
-                console.log('>>> [Hết Cần] Không thấy cần câu! Đứng ngáp chờ... (Kiểm tra rương/túi đồ)');
+            // [CẢI TIẾN LÕI] Ép con bot lăn chuột vào ô số 1 liên tục, tuyệt đối không dùng lệnh equip()
+            bot.setQuickBarSlot(0);
+
+            // Kiểm tra xem món đồ đang cầm trên tay có đúng là cần câu không (Lỡ cần gãy)
+            if (!bot.heldItem || bot.heldItem.name !== 'fishing_rod') {
+                console.log('>>> [Hết Cần] Ô đầu tiên không phải là cần câu (Có thể đã gãy)! Đứng ngáp chờ...');
                 await sleep(10000);
                 continue; 
-            }
-
-            // [TỐI ƯU]: Chỉ lấy cần câu ra nếu trên tay chưa cầm, tránh việc Mineflayer tự ý đổi slot kho đồ liên tục
-            if (!bot.heldItem || bot.heldItem.name !== 'fishing_rod') {
-                await bot.equip(fishingRod, 'hand');
             }
 
             try {
