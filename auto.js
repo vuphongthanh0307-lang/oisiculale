@@ -41,7 +41,6 @@ let isLoggingIn = false;
 let isGUIOpen = false; 
 let failCount = 0;
 let isSonarKick = false; 
-let sonarInterval = null; 
 let rotateInterval = null; 
 
 function createBot() {
@@ -184,31 +183,15 @@ function createBot() {
             setTimeout(() => bot.chat('/dn Windvu2193'), 1500); 
         }
 
+        // ==============================================================
+        // [FIX LỖI MỚI]: BỎ CHẾ ĐỘ RUNG LẮC 20HZ LÀM VĂNG GAME
+        // ==============================================================
         if (lowerMsg.includes('sonar') && lowerMsg.includes('xác minh')) {
-            console.log('>>> [Anti-Bot] Bị Sonar soi! Kích hoạt tà thuật rung lắc 20Hz...');
+            console.log('>>> [Anti-Bot] Bị Sonar soi! Đứng im như tượng đá, cấm nhúc nhích...');
             bot.clearControlStates();
             botState = 'WAIT_AUTO';
             isSonarKick = true; 
-
-            if (sonarInterval) clearInterval(sonarInterval);
-
-            sonarInterval = setInterval(() => {
-                if (botState === 'WAIT_AUTO' && bot._client && bot.entity && bot.entity.position) {
-                    try {
-                        const jitterYaw = bot.entity.yaw + (Math.random() - 0.5) * 0.05;
-                        const jitterPitch = bot.entity.pitch + (Math.random() - 0.5) * 0.05;
-
-                        bot._client.write('position_look', {
-                            x: bot.entity.position.x,
-                            y: bot.entity.position.y,
-                            z: bot.entity.position.z,
-                            yaw: jitterYaw,
-                            pitch: jitterPitch,
-                            onGround: true
-                        });
-                    } catch (e) {}
-                }
-            }, 50); 
+            // Không gửi gói tin rung lắc (jitter) nữa để pass Sonar an toàn.
         }
 
         if (message.includes('/pt join')) {
@@ -321,7 +304,6 @@ function createBot() {
         bot.isFishingActive = false;
         bot.isRecasting = false;
 
-        if (sonarInterval) { clearInterval(sonarInterval); sonarInterval = null; }
         if (rotateInterval) { clearInterval(rotateInterval); rotateInterval = null; }
 
         if (isSonarKick) {
